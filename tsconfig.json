@@ -13,5 +13,5 @@
     "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
     "lib": ["ES6"],
   },
-  "include": ["src/**/*"],
+  "include": ["src/index.ts"],
 }

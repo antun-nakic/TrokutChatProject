@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id        Int        @id @default(autoincrement())
-  name      String     @db.VarChar(30)
+  name      String     @db.VarChar(30) @unique
   pass      String     @db.VarChar(30)
   avatar    String?
   joined    Joined?

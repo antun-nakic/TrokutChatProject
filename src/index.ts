@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import authRouter from "./api/auth/auth.router.js"
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 //ruteri
-//app.use('api/auth', authRouter);
+app.use('/api/auth', authRouter);
 //app.use('api/user', userRouter);
 
 app.get("/", (_: Request, res: Response) => {

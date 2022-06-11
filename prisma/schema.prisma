@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(30)
+  pass      String     @db.VarChar(30)
+  avatar    String?
+  joined    Joined?
+  sub_priv  Sub_Priv[]
+  sub_pers1 Sub_Pers[] @relation("usr1")
+  sub_pers2 Sub_Pers[] @relation("usr2")
+  message   Message[]
+}
+
+model Room {
+  id       Int        @id @default(autoincrement())
+  title    String     @db.VarChar(30)
+  desc     String     @db.Text
+  type     ROOM_TYPE
+  joined   Joined[]
+  sub_priv Sub_Priv[]
+  sub_pers Sub_Pers[]
+  message  Message[]
+}
+
+model Joined {
+  user User @relation(fields: [id_u], references: [id])
+  id_u Int  @id
+  room Room @relation(fields: [id_r], references: [id])
+  id_r Int
+}
+
+model Sub_Priv {
+  user User @relation(fields: [id_u], references: [id])
+  id_u Int
+  room Room @relation(fields: [id_r], references: [id])
+  id_r Int
+
+  @@id([id_u, id_r])
+}
+
+model Sub_Pers {
+  user1 User @relation(fields: [id_u1], references: [id], name: "usr1")
+  id_u1 Int
+  user2 User @relation(fields: [id_u2], references: [id], name: "usr2")
+  id_u2 Int
+  room  Room @relation(fields: [id_r], references: [id])
+  id_r  Int
+
+  @@id([id_u1, id_u2])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [id_u], references: [id])
+  id_u      Int
+  room      Room     @relation(fields: [id_r], references: [id])
+  id_r      Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+enum ROOM_TYPE {
+  PUBLIC
+  PRIVATE
+  PERSONAL
+}

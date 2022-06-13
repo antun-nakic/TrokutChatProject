@@ -1,48 +1,51 @@
 import { Request, RequestHandler, Response } from 'express';
-import {PrismaClient, User as UserModel} from "@prisma/client";
+import { AuthService } from './auth.service.js';
 
-const prisma = new PrismaClient()
+class AuthController {
+  private authService;
+  constructor() {
+    this.authService = new AuthService();
+  }
 
-/**
- * Inserts(registers) new user into system
- *
- * @param req Express Request
- * @param res Express Response
- */
-export const insertNewUser: RequestHandler = async (req: Request, res:Response)=>{
-  const user: UserModel = await prisma.user.create({
-    data: {
-      name: req.body.name,
-      pass: req.body.pass,
+  createNewUser: RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const user = await this.authService.create({
+        name: req.body.name,
+        pass: req.body.pass,
+      });
+
+      res.status(200).json({
+        user
+      });
+    } catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[auth.controller][createNewUser][Error] ', message);
+      res.status(500).json({
+        error: message
+      });
     }
   }
-  );
-  res.status(200).json({
-    user
-  });
+
+  loginUser: RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const user = await this.authService.get(req.body.name);
+
+      // @ts-ignore - user is User here
+      if (user.pass !== req.body.pass) {
+        throw new Error("Wrong password.");
+      } else {
+        res.status(200).json({
+          user
+        });
+      }
+    } catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[auth.controller][loginUser][Error] ', message);
+      res.status(500).json({
+        error: message
+      });
+    }
+  }
 }
 
-/**
- * Login user into system
- *
- * @param req Express Request
- * @param res Express Response
- * 
- * @result user object
- */
- export const loginUser: RequestHandler = async (req: Request, res:Response)=>{
-  let response: Object;
-  const user: UserModel | null = await prisma.user.findUnique({
-    where: {
-      name: req.body.name
-    },
-  });
-  if(user && (user.pass === req.body.pass)){
-    response = user || {"poruka":"Krivi username ili password"};
-  }else{
-    response = {"poruka":"Krivi username ili password"}
-  }
-  res.status(200).json({
-    response
-  });
-}
+export default new AuthController();

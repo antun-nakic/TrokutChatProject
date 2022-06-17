@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import authRouter from "./api/auth/auth.router.js";
 import userRouter from "./api/user/user.router.js";
+import roomRouter from "./api/room/room.router.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 //ruteri
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
+app.use('/api/room', roomRouter);
 
 app.get("/", (_: Request, res: Response) => {
   res.send("Express + TypeScript Server");

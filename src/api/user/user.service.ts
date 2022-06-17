@@ -8,6 +8,36 @@ export class UserService {
     this.prisma = new PrismaClient();
   }
 
+  async getAll(): Promise<UserModel[] | Error> {
+    try {
+      const users: UserModel[] = await this.prisma.user.findMany();
+
+      return users;
+    }
+    catch (error) {
+      console.error('[user.service][getAll][Error]: ', error);
+      throw new Error('Database query error.');
+    }
+  }
+
+  async getOne(parametar: object): Promise<UserModel | Error> {
+    try {
+      const user: UserModel | null = await this.prisma.user.findUnique({
+        where: parametar
+      });
+
+      if (user === null)
+        throw new Error("User does not exist.");
+
+      return user;
+    }
+    catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[user.service][getOne][Error]: ', message);
+      throw new Error(message);
+    }
+  }
+
   // @ts-ignore
   async modify(newData: IUserModify): Promise<UserModel | Error> {
     try {

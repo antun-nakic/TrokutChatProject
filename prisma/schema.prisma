@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id        Int        @id @default(autoincrement())
-  name      String     @db.VarChar(30) @unique
+  name      String     @unique @db.VarChar(30)
   pass      String     @db.VarChar(30)
   avatar    String?
   joined    Joined?
@@ -21,7 +21,7 @@ model User {
 
 model Room {
   id       Int        @id @default(autoincrement())
-  title    String     @db.VarChar(30)
+  title    String     @unique @db.VarChar(30)
   desc     String     @db.Text
   type     ROOM_TYPE
   joined   Joined[]

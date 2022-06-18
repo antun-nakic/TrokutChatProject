@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import authRouter from "./api/auth/auth.router.js";
 import userRouter from "./api/user/user.router.js";
 import roomRouter from "./api/room/room.router.js";
+import subscriptionRouter from "./api/subscriptions/subscription.router.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
+app.use('/api/subscriptions', subscriptionRouter);
 
 app.get("/", (_: Request, res: Response) => {
   res.send("Express + TypeScript Server");

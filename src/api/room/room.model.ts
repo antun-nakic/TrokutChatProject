@@ -6,4 +6,5 @@ export interface IRoomCreate {
   title: string;
   desc: string;
   type: RoomModel["type"],
+  participants?: Array<number>
 }

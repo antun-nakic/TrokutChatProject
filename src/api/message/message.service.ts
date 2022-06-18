@@ -12,18 +12,30 @@ export class MessageService {
     this.prisma = new PrismaClient();
   }
 
-  async getPublicMessages(room: number): Promise<MessageModel[] | Error> 
+  async getPublicMessages(roomId: number): Promise<MessageModel[] | Error> 
   {
     try 
     {
-        const messages: MessageModel[] = await this.prisma.message.findMany({
+        // @ts-ignore
+        const room: RoomModel = await this.prisma.room.findMany({
             where: {
-                id_r: room,
-                type: "PUBLIC"
+                id: roomId,
+                type: 'PUBLIC'
             }
         })
-
-        return messages;
+        if (room !== null) 
+        {
+            const messages: MessageModel[] = await this.prisma.message.findMany({
+                where: {
+                    id_r: roomId,
+                }
+            })
+            return messages;
+        }
+        else
+        {
+            throw new Error("This room does not exist");
+        }
     } 
     catch (error) {
         console.error('[message.service][getPublicMessages][Error]: ', error);
@@ -35,7 +47,7 @@ export class MessageService {
   {
     try 
     {
-        const subPrivate: SubPrivModel | null = await this.prisma.Sub_Priv.findUnique({
+        const subPrivate: SubPrivModel | null = await this.prisma.sub_Priv.findUnique({
             where: {
                 id_u: user,
                 id_r: room
@@ -46,7 +58,6 @@ export class MessageService {
             const messages: MessageModel[] = await this.prisma.message.findMany({
                 where: {
                     id_r: room,
-                    type: "PRIVATE"
                 }
             })
             return messages;
@@ -66,7 +77,7 @@ export class MessageService {
   {
     try 
     {
-        const subPers: SubPersModel | null = await this.prisma.Sub_Pers.findUnique({
+        const subPers: SubPersModel | null = await this.prisma.sub_Pers.findUnique({
             where: {
                 id_u1: user1,
                 id_u2: user2,
@@ -78,7 +89,6 @@ export class MessageService {
             const messages: MessageModel[] = await this.prisma.message.findMany({
                 where: {
                     id_r: room,
-                    type: "PERSONAL"
                 }
             })
             return messages;
@@ -94,7 +104,6 @@ export class MessageService {
       }
   }
 
-  // @ts-ignore
   async addMessage(input: IMessageCreate): Promise<MessageModel | Error> {
     try 
     {

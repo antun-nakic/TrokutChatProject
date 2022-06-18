@@ -14,7 +14,7 @@ class MessageController {
       {
         throw new Error('You entered wrong parameters!');
       }
-      const messages = await this.messageService.getPublicMessages(parametar);
+      const messages = await this.messageService.getPublicMessages(parametar.id);
       res.status(200).json(
         messages
       );
@@ -32,12 +32,15 @@ class MessageController {
   getPrivateMessages: RequestHandler = async (req: Request, res: Response) => {
     try 
     {
-        const parametar = { id_r: parseInt(req.params.id_r),id_u:parseInt(req.params.id_u)  };
+        const parametar = { 
+            id_r: parseInt(req.params.id_r),
+            id_u:parseInt(req.params.id_u)  
+        };
       if (isNaN(parametar.id_r) || isNaN(parametar.id_u))
       {
         throw new Error('You entered wrong parameters!');
       }
-        const messages = await this.messageService.getPrivateMessages(parametar);
+        const messages = await this.messageService.getPrivateMessages(parametar.id_r, parametar.id_u);
         res.status(200).json(
             messages
         );
@@ -55,12 +58,16 @@ class MessageController {
   getPersonalMessages: RequestHandler = async (req: Request, res: Response) => {
     try 
     {
-        const parametar = { id_r: parseInt(req.params.id_r),id_u1:parseInt(req.params.id_u1),id_u2:parseInt(req.params.id_u2)  };
+        const parametar = { 
+            id_r: parseInt(req.params.id_r),
+            id_u1:parseInt(req.params.id_u1),
+            id_u2:parseInt(req.params.id_u2)  
+        };
       if (isNaN(parametar.id_r) || isNaN(parametar.id_u1) || isNaN(parametar.id_u2))
       {
         throw new Error('You entered wrong parameters!');
       }
-        const messages = await this.messageService.getPersonalMessages(parametar);
+        const messages = await this.messageService.getPersonalMessages(parametar.id_r, parametar.id_u1, parametar.id_u2);
         res.status(200).json(
           messages
         );
@@ -76,13 +83,29 @@ class MessageController {
   }
 
   addMessage: RequestHandler = async (req: Request, res: Response) => {
-    const message = await this.messageService.addMessage({
-        id: req.body.id,
-        id_u: req.body.id_u,
-        id_r: req.body.id_r,
-        content: req.body.content,
-        created_at: req.body.created_at //treba vući sa računala
-    })
+    try 
+    {
+        const message = await this.messageService.addMessage({
+            id: req.body.id,
+            id_u: req.body.id_u,
+            id_r: req.body.id_r,
+            content: req.body.content,
+            created_at: req.body.created_at //treba vući sa računala
+        })
+
+        res.status(200).json({
+            message
+        });
+    } 
+    catch (error) 
+    {
+        let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[message.controller][addMessage][Error] ', message);
+      res.status(500).json({
+        error: message
+      });
+    }
+    
   }
 }
 

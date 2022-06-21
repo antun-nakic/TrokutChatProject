@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Sub_Priv as SubPrivModel, Sub_Pers as SubPersModel, User as UserModel, Room as RoomModel } from "@prisma/client";
+import { Sub_Priv as SubPrivModel, User as UserModel } from "@prisma/client";
 import { IPrivCreate } from './subscription.model.js';
 
 export class SubscriptionService {

@@ -4,6 +4,7 @@ import authRouter from "./api/auth/auth.router.js";
 import userRouter from "./api/user/user.router.js";
 import roomRouter from "./api/room/room.router.js";
 import subscriptionRouter from "./api/subscriptions/subscription.router.js";
+import messageRouter from "./api/message/message.router.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
 app.use('/api/subscriptions', subscriptionRouter);
+app.use('/api/message', messageRouter);
 
 app.get("/", (_: Request, res: Response) => {
   res.send("Express + TypeScript Server");

@@ -6,6 +6,5 @@ const router = Router();
 router.get("/all", roomController.getAllPublic);
 router.post("/createPublic", roomController.createPublic);
 router.post("/createPrivate", roomController.createPrivate);
-//router.post("/createPersonal", roomController.createPersonal);
 
 export default router;

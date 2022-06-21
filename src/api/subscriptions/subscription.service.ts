@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Sub_Priv as SubPrivModel, User as UserModel } from "@prisma/client";
-import { IPrivCreate } from './subscription.model.js';
+import { IPrivCreate, IPersCreate, IGet } from './subscription.model.js';
 
 export class SubscriptionService {
   private prisma;
@@ -55,6 +55,110 @@ export class SubscriptionService {
     catch (error) {
       let message = (error instanceof Error) ? error.message : 'Unknown Error';
       console.error('[subscription.service][createPrivate][Error]: ', message);
+      throw new Error(message);
+    }
+  }
+
+  // @ts-ignore
+  async createPersonal(input: IPersCreate): Promise<object | Error> {
+    try {
+      //Provjeravamo jeli user taj za kojeg se predstavlja
+      const user: UserModel | null = await this.prisma.user.findUnique({
+        where: {
+          id: input.id_u1,
+        },
+      });
+      if (user === null)
+        throw new Error("User does not exist.");
+      else if (user.pass !== input.pass)
+        throw new Error("Wrong password provided");
+
+      //Provjeravamo dali personalna soba postoji
+      const subscription = await this.prisma.sub_Pers.findUnique({
+        where: { 
+          id_u1_id_u2:{
+            id_u1:input.id_u1,
+            id_u2:input.id_u2
+          }
+         }
+      })
+      if (subscription !== null)
+        return subscription
+
+      //otvaramo novu sobu
+      const room = await this.prisma.room.create({
+        data:{
+          desc:"Personalna soba",
+          type:'PERSONAL'
+        }
+      })
+
+      //adding new subscriptions to personal room
+      const preparedInserts = [{ id_u1: input.id_u1, id_u2:input.id_u2, id_r: room.id },{ id_u1: input.id_u2, id_u2:input.id_u1, id_r: room.id }];
+      const subs = await this.prisma.sub_Pers.createMany({
+        data: preparedInserts,
+        skipDuplicates: true,
+      });
+      if (subs instanceof Error)
+        throw new Error("Error occured while adding participants to personal room");
+
+      return subs;
+    }
+    catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[subscription.service][createPersonal][Error]: ', message);
+      throw new Error(message);
+    }
+  }
+
+  // @ts-ignore
+  async getAllPrivate(parametar: IGet): Promise<object | Error> {
+    try {
+      const data = await this.prisma.user.findUnique({
+        where:{
+          name:parametar.name
+        },
+        include:{
+          sub_priv: {
+            include: {
+              room:true,
+            }
+          }
+        }
+      })
+
+      // @ts-ignore
+      return data;
+    }
+    catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[subscription.service][createPersonal][Error]: ', message);
+      throw new Error(message);
+    }
+  }
+
+  // @ts-ignore
+  async getAllPersonal(parametar: IGet): Promise<object | Error> {
+    try {
+      const data = await this.prisma.user.findUnique({
+        where:{
+          name:parametar.name
+        },
+        include:{
+          sub_priv: {
+            include: {
+              room:true,
+            }
+          }
+        }
+      })
+
+      // @ts-ignore
+      return data;
+    }
+    catch (error) {
+      let message = (error instanceof Error) ? error.message : 'Unknown Error';
+      console.error('[subscription.service][createPersonal][Error]: ', message);
       throw new Error(message);
     }
   }

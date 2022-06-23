@@ -75,26 +75,26 @@ export class SubscriptionService {
 
       //Provjeravamo dali personalna soba postoji
       const subscription = await this.prisma.sub_Pers.findUnique({
-        where: { 
-          id_u1_id_u2:{
-            id_u1:input.id_u1,
-            id_u2:input.id_u2
+        where: {
+          id_u1_id_u2: {
+            id_u1: input.id_u1,
+            id_u2: input.id_u2
           }
-         }
+        }
       })
       if (subscription !== null)
         return subscription
 
       //otvaramo novu sobu
       const room = await this.prisma.room.create({
-        data:{
-          desc:"Personalna soba",
-          type:'PERSONAL'
+        data: {
+          desc: "Personalna soba",
+          type: 'PERSONAL'
         }
       })
 
       //adding new subscriptions to personal room
-      const preparedInserts = [{ id_u1: input.id_u1, id_u2:input.id_u2, id_r: room.id },{ id_u1: input.id_u2, id_u2:input.id_u1, id_r: room.id }];
+      const preparedInserts = [{ id_u1: input.id_u1, id_u2: input.id_u2, id_r: room.id }, { id_u1: input.id_u2, id_u2: input.id_u1, id_r: room.id }];
       const subs = await this.prisma.sub_Pers.createMany({
         data: preparedInserts,
         skipDuplicates: true,
@@ -115,20 +115,24 @@ export class SubscriptionService {
   async getAllPrivate(parametar: IGet): Promise<object | Error> {
     try {
       const data = await this.prisma.user.findUnique({
-        where:{
-          name:parametar.name
+        where: {
+          name: parametar.name
         },
-        include:{
+        select: {
           sub_priv: {
-            include: {
-              room:true,
+            select: {
+              room: true
             }
           }
         }
       })
 
+      const preparedAnswer = data?.sub_priv.map(element => {
+        return element.room;
+      })
+
       // @ts-ignore
-      return data;
+      return preparedAnswer;
     }
     catch (error) {
       let message = (error instanceof Error) ? error.message : 'Unknown Error';
@@ -141,20 +145,30 @@ export class SubscriptionService {
   async getAllPersonal(parametar: IGet): Promise<object | Error> {
     try {
       const data = await this.prisma.user.findUnique({
-        where:{
-          name:parametar.name
+        where: {
+          name: parametar.name
         },
-        include:{
-          sub_priv: {
-            include: {
-              room:true,
+        select: {
+          sub_pers1: {
+            select: {
+              id_r: true,
+              id_u2: true,
+              user2: {
+                select: {
+                  name: true
+                }
+              }
             }
           }
         }
       })
 
+      const preparedAnswer = data?.sub_pers1.map(element => {
+        return { id_friend: element.id_u2, name_friend: element.user2.name, id_room: element.id_r };
+      })
+
       // @ts-ignore
-      return data;
+      return preparedAnswer;
     }
     catch (error) {
       let message = (error instanceof Error) ? error.message : 'Unknown Error';

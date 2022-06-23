@@ -29,14 +29,15 @@ class MessageController {
 
   getPrivateMessages: RequestHandler = async (req: Request, res: Response) => {
     try {
-      const parametar = {
-        id_r: parseInt(req.params.id_r),
-        id_u: parseInt(req.params.id_u)
-      };
-      if (isNaN(parametar.id_r) || isNaN(parametar.id_u)) {
-        throw new Error('You entered wrong parameters!');
-      }
-      const messages = await this.messageService.getPrivateMessages(parametar.id_r, parametar.id_u);
+      const canIadd = await this.messageService.hasRightToPost({
+        id_u: req.body.id_u,
+        id_r: req.body.id_r,
+      });
+
+      if (canIadd === false)
+        throw new Error('You have not rights to post the message in that chat room!');
+
+      const messages = await this.messageService.getPrivateMessages(req.body.id_r);
       res.status(200).json(
         messages
       );
@@ -52,15 +53,15 @@ class MessageController {
 
   getPersonalMessages: RequestHandler = async (req: Request, res: Response) => {
     try {
-      const parametar = {
-        id_r: parseInt(req.params.id_r),
-        id_u1: parseInt(req.params.id_u1),
-        id_u2: parseInt(req.params.id_u2)
-      };
-      if (isNaN(parametar.id_r) || isNaN(parametar.id_u1) || isNaN(parametar.id_u2)) {
-        throw new Error('You entered wrong parameters!');
-      }
-      const messages = await this.messageService.getPersonalMessages(parametar.id_r, parametar.id_u1, parametar.id_u2);
+      const canIadd = await this.messageService.hasRightToPost({
+        id_u: req.body.id_u,
+        id_r: req.body.id_r,
+      });
+
+      if (canIadd === false)
+        throw new Error('You have not rights to post the message in that chat room!');
+
+      const messages = await this.messageService.getPrivateMessages(req.body.id_r);
       res.status(200).json(
         messages
       );

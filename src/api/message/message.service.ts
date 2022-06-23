@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import {
     Room as RoomModel,
-    Message as MessageModel,
-    Sub_Priv as SubPrivModel
+    Message as MessageModel
 } from "@prisma/client";
 import { IMessageCreate, IMessageCheckRight } from './message.model.js';
 
@@ -39,27 +38,32 @@ export class MessageService {
         }
     }
 
-    async getPrivateMessages(room: number, user: number): Promise<MessageModel[] | Error> {
+    async getPrivateMessages(room: number): Promise<MessageModel[] | Error> {
         try {
-            const subPrivate: SubPrivModel | null = await this.prisma.sub_Priv.findUnique({
+            const messages = await this.prisma.message.findMany({
                 where: {
-                    id_u_id_r: {
-                        id_u: user,
-                        id_r: room
+                    id_r: room,
+                },
+                include: {
+                    user: {
+                        select: {
+                            name: true
+                        }
                     }
                 }
+
             })
-            if (subPrivate !== null) {
-                const messages: MessageModel[] = await this.prisma.message.findMany({
-                    where: {
-                        id_r: room,
-                    }
-                })
-                return messages;
-            }
-            else {
-                throw new Error("This room does not exist");
-            }
+
+            const preparedAnswer = messages?.map(element => {
+                let odgovor = { ...element, name: element.user.name };
+                // @ts-ignore
+                delete odgovor.user;
+                return odgovor;
+            })
+
+            // @ts-ignore
+            return preparedAnswer;
+
         }
         catch (error) {
             console.error('[message.service][getPrivateMessages][Error]: ', error);
@@ -67,30 +71,31 @@ export class MessageService {
         }
     }
 
-    async getPersonalMessages(room: number, user1: number, user2: number): Promise<MessageModel[] | Error> {
+    async getPersonalMessages(room: number): Promise<MessageModel[] | Error> {
         try {
-            //pronaći dali uopće postoji razgovor tih dvaju sugovornika
-            const subPers = await this.prisma.sub_Pers.findUnique({
+            const messages = await this.prisma.message.findMany({
                 where: {
-                    id_u1_id_u2: {
-                        id_u1: user1,
-                        id_u2: user2
+                    id_r: room,
+                },
+                include: {
+                    user: {
+                        select: {
+                            name: true
+                        }
                     }
                 }
+
             })
 
-            //ako je sve ispravno dohvaćamo privatne poruke iz te personalne sobe
-            if (subPers !== null && room === subPers.id_r) {
-                const messages: MessageModel[] = await this.prisma.message.findMany({
-                    where: {
-                        id_r: room,
-                    }
-                })
-                return messages;
-            }
-            else {
-                throw new Error("Either the conversation doesent exists, or the room id You have provided is wrong.");
-            }
+            const preparedAnswer = messages?.map(element => {
+                let odgovor = { ...element, name: element.user.name };
+                // @ts-ignore
+                delete odgovor.user;
+                return odgovor;
+            })
+
+            // @ts-ignore
+            return preparedAnswer;
         }
         catch (error) {
             console.error('[message.service][getPersonalMessages][Error]: ', error);
